@@ -1,6 +1,4 @@
 import math
-import random
-
 import pyglet
 from pyglet import gl
 from pyglet.window import key
@@ -12,8 +10,8 @@ WIDTH = 1200
 HEIGHT = 800
 
 "Game constants"
-ACCELERATION = 120              #Zrýchlenie rakety
-ROTATION_SPEED = 0.05           #Rýchlosť otáčania rakety
+#Todo 1: Vytvorte konštanty pre zrýchlenie rakety a rýchlosť otáčania a pokúste sa nájsť optimálne hodnoty
+
 
 objects = []                    #ZOZNAM VŠETKÝCH AKTÍVNYCH OBJEKTOV V HRE
 batch = pyglet.graphics.Batch() #ZOZNAM SPRITOV PRE ZJEDNODUŠENÉ VYKRESLENIE
@@ -32,49 +30,27 @@ def set_anchor_of_image_to_center(img):
 "----------------VLASTNÉ TRIEDY----------------"
 
 """
-Rodičovská trieda
-"""
-class SpaceObject:
-   #Todo 1: Vytvorenie rodičovskej triedy
-   def __init__(self, sprite, x,y,speed_x = 0, speed_y = 0):
-       self.speed_x = speed_x
-       self.speed_y = speed_y
-       self.rotation = 1.57 #radiany, otocene dohora
-
-       self.sprite = pyglet.sprite.Sprite(sprite, batch=batch)
-       self.sprite.x = x
-       self.sprite.y = y
-
-"""
 Trieda Spaceship
 Hlavný objekt hry, predstavuje hráča
 """
-class Spaceship(SpaceObject):
-    #Todo 1: Presunťe metódy ktoré budú spoločné pre všetky objekty do triedy spaceObject
+class Spaceship:
+
     "Konštruktor"
+    def __init__(self, sprite):
+        self.x_speed = 0
+        self.y_speed = 0
+        self.rotation = 1.57 # radiany -> hodnota 1.57 smeruje nahor
+
+        self.sprite = pyglet.sprite.Sprite(sprite, batch=batch)
+        self.sprite.x = WIDTH // 2
+        self.sprite.y = HEIGHT // 2
 
     """
     Metóda pre kontrolu pozície či sa nachádzame na okraji
     """
-
     def checkBoundaries(self):
-        if self.sprite.x > WIDTH:
-            self.sprite.x = 0
-
-        if self.sprite.x < 0:
-            self.sprite.x = WIDTH
-
-        if self.sprite.y < 0:
-            self.sprite.y = HEIGHT
-
-        if self.sprite.y > HEIGHT:
-            self.sprite.y = 0
-    def tick(self,dt):
-        self.sprite.x +=  dt * self.speed_x
-        self.sprite.y += dt * self.speed_y
-        self.sprite.rotation = 90 - math.degrees(self.rotation)
-        self.chcekBoundaries()
-
+        #Todo 6: Skontrolujte či sa ne-nachádzate s loďou mimo okna ak áno loď by sa mala objaviť na druhej strane
+        pass
 
     """
     Každý frame sa vykoná táto metóda to znamená v našom prípade:
@@ -82,28 +58,24 @@ class Spaceship(SpaceObject):
     Mechanic of spaceship - rotation, movement, controls
     """
     def tick(self, dt):
+        # Todo 5: Dokončite metódu tick ktorá sa stará o ovládanie lodi
+
         "Zrýchlenie po kliknutí klávesy W. Výpočet novej rýchlosti"
-        if 'W' in pressed_keyboards:
-            self.speed_x = self.x_speed + dt * ACCELERATION * math.cos(self.rotation)
-            self.speed_y = self.y_speed + dt * ACCELERATION * math.sin(self.rotation)
+        # Todo
+            #self.x_speed = self.x_speed + dt * ACCELERATION * math.cos(self.rotation) #Výpočet ryhlosti v smere X
+            #self.y_speed = self.y_speed + dt * ACCELERATION * math.sin(self.rotation) #Výpočet ryhlosti v smere Y
 
         "Spomalenie/spätný chod po kliknutí klávesy S"
-        if 'S' in pressed_keyboards:
-            self.speed_x = self.x_speed - dt * ACCELERATION * math.cos(self.rotation)
-            self.speed_y = self.y_speed - dt * ACCELERATION * math.sin(self.rotation)
+        #Todo
 
         "Otočenie doľava - A"
-        if 'A' in pressed_keyboards:
-            self.rotation -= ROTATION_SPEED
+        #Todo
 
         "Otočenie doprava - D"
-        if 'D' in pressed_keyboards:
-            self.rotation += ROTATION_SPEED
+        #Todo
 
         "Ručná brzda - SHIFT"
-        if 'SHIFT' in pressed_keyboards:
-            self.x_speed = 0
-            self.y_speed = 0
+        #Todo
 
         "Posunutie vesmírnej lode na novú pozíciu"
         self.sprite.x += dt * self.x_speed
@@ -111,7 +83,7 @@ class Spaceship(SpaceObject):
         self.sprite.rotation = 90 - math.degrees(self.rotation)
 
         "Kontrola či sme prešli kraj"
-        self.checkBoundaries()
+        #Todo
 
 """
 GAME WINDOW CLASS
@@ -131,48 +103,17 @@ class Game:
         self.playerShip_image = pyglet.image.load('Assetss/PNG/playerShip1_blue.png')
         set_anchor_of_image_to_center(self.playerShip_image)
         self.background_image = pyglet.image.load('Assetss/Backgrounds/black.png')
-        #Todo 2: Loadnutie viac typov asteroidov do listu
-        self.asteroidimages = ["Assetss\PNG\Meteors\meteorGrey_big1.png",
-                               "Assetss\PNG\Meteors\meteorGrey_med1.png",
-                               "Assetss\PNG\Meteors\meteorGrey_small1.png",
-                               "Assetss\PNG\Meteors\meteorGrey_tiny1.png"]
 
     """
     Vytvorenie objektov pre začiatok hry
     """
     def init_objects(self):
-        #Vytvorenie lode
-        spaceShip = Spaceship(self.playerShip_image, WIDTH // 2, HEIGHT//2)
-        self.game_objects.append(spaceShip)
+        #Todo 5: Vytvorte objekt pre loď a pridajte ho do game_objects
 
-        #Nastavenie pozadia a prescalovanie
+
         self.background = pyglet.sprite.Sprite(self.background_image)
         self.background.scale_x = 6
         self.background.scale_y = 4
-
-        #Vytvorenie Meteoritov
-        self.create_asteroids(7)
-
-    def create_asteroids(self,count):
-        "Vytvorenie X asteroidov"
-        #Todo 2
-    def create_asteroids(self,count):
-        "Vytvorenie asteroidov"
-        #Vyber asteroidu nahodne a nastavenie ukotvenia dostredu(obrazka)
-        img = pyglet.load(random.choice(self.asteroidimages))
-        set_anchor_of_image_to_center(img)
-        #nastavenie pozicie na okraji obrazovky nahodne
-        position = [0,0]
-        dimension = [WIDTH, HEIGHT]
-        axis = random.choice([0,1])
-        position[axis] = random.uniform(0, dimension[axis])
-        #nastavenie rychlosti
-        tmp_speed_x = random.uniform(-100,100)
-        tmp_speed_y = random.uniform(-100, 100)
-
-        #temp object pre asteroid
-        asteroid = SpaceObject(img, position[0], position[1],tmp_speed_x,tmp_speed_y)
-        self.game_objects.append(asteroid)
 
     """
     Event metóda ktorá sa volá na udalosť on_draw stále dookola
@@ -201,32 +142,17 @@ class Game:
     Event metóda pre spracovanie klávesových vstupov
     """
     def key_press(self, symbol, modifikatory):
-        if symbol == key.W:
-            pressed_keyboards.add('W')
-        if symbol == key.S:
-            pressed_keyboards.add('S')
-        if symbol == key.A:
-            pressed_keyboards.add('A')
-        if symbol == key.D:
-            pressed_keyboards.add('D')
-        if symbol == key.LSHIFT:
-            pressed_keyboards.add('SHIFT')
+        # Todo 2: Vytvorte Event Handler pre zmáčknuté klávesy
+        # Todo Tie ktoré hráč zmačkol sa uložia do množiny pressed_keyboards
+        pass
 
     """
     Event metóda pre spracovanie klávesových výstupov
     """
     def key_release(self, symbol, modifikatory):
-        if symbol == key.W:
-            pressed_keyboards.discard('W')
-        if symbol == key.S:
-            pressed_keyboards.discard('S')
-        if symbol == key.A:
-            pressed_keyboards.discard('A')
-        if symbol == key.D:
-            pressed_keyboards.discard('D')
-        if symbol == key.LSHIFT:
-            pressed_keyboards.discard('SHIFT')
-
+        # Todo 3: Vytvorte Event Handler pre klávesy ktoré už ďalej nie sú zmaćknuté
+        # Todo Tieto klávesy odoberte z pressed_keyboards mnoźiny
+        pass
     """
     Start game metóda 
     """
@@ -254,8 +180,3 @@ class Game:
 
 "----------- StartGame -----------"
 Game().start()
-
-
-
-
-
